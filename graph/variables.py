@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from utils import confirm_variables
+from command_questions import confirm_variables
+
+
 # Give endpoint to get publishers
 # Create config.py to import variables -- Ravin for example will "hardcode" known variables
 # 1. get orgs - return id 
