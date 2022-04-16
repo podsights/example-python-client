@@ -28,6 +28,44 @@ class Mutation():
         """
         return Mutation.mutation(data_request, variables)
 
+    def create_dynamic_line_item(variables):
+        data_request = """
+            createCampaignDynamic($input: CreateCampaignDynamicInput!) {
+                createCampaignDynamic(input: $input){
+                    campaignDynamic {
+                    campaign{
+                        id
+                    }
+                    name
+                    duration
+                    cost
+                    goal
+                    expectedEndAt
+                    expectedStartAt
+                    }
+                }
+            }
+        """
+        return Mutation.mutation(data_request, variables)
+
+    def create_streaming_line_item(variables):
+        data_request = """
+            createCampaignStreaming($input: CreateCampaignStreamingInput!) {
+                createCampaignStreaming(input: $input){
+                    campaignStreaming {
+                    campaign{
+                        id
+                    }
+                    name
+                    duration
+                    cost
+                    goal
+                    }
+                }
+            }
+        """
+        return Mutation.mutation(data_request, variables)
+
     def mutation(data_request, variables):
         query = f"""
             mutation {data_request}

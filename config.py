@@ -10,6 +10,9 @@ cost = ""
 goal = ""
 start_date = ""
 end_date = ""
+campaign_id = ""
+duration = ""
+line_item_name = ""
 
 # common
 url = "http://api.pdst.fm/graph/analytics"
