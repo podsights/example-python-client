@@ -63,18 +63,18 @@ def create_dynamic_input(line_item: DynamicLineItem):
     return input
 
 
-def create_tracking_urls_input(campaign: Campaign):
+def create_tracking_urls_input(pub_id: str, campaign_id: str):
     """When creating input the keys and strings need quotes."""
     input = f""" {{
-        "organizationId" : "{campaign.pub_id}",
-        "campaignId" : "{campaign.id}"
+        "organizationId" : "{pub_id}",
+        "campaignId" : "{campaign_id}"
     }}
     """
     confirm_variables(input)
     return input
 
 
-def confirm_variables(data):
+def confirm_variables(data: str):
     print(f"\n{data}")
     selection = str(input(f"\nIs the above data correct? y/n "))
     if selection not in ("y", "n"):

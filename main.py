@@ -1,4 +1,4 @@
-from questions import start, run_create_campaign, run_create_line_item
+from core import start, run_create_campaign, run_create_line_item, run_retrieve_tracking_urls
 
 
 def main():
@@ -8,7 +8,7 @@ def main():
     elif action == "dynamic":
         run_create_line_item()
     elif action == "urls":
-        pass
+        run_retrieve_tracking_urls()
 
 
 if __name__ == "__main__":

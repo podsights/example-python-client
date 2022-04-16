@@ -5,7 +5,8 @@ import arrow
 from graph.mutations import Mutation
 from graph.queries import Query
 
-from graph.variables import Campaign, DynamicLineItem, create_campaign_input, create_dynamic_input
+from graph.variables import Campaign, DynamicLineItem, create_campaign_input, create_dynamic_input, \
+    create_tracking_urls_input
 
 
 @dataclass
@@ -101,21 +102,13 @@ def run_create_line_item(kind: str = "dynamic"):
         Mutation.create_dynamic_line_item(dynamic_line_item_input)
 
 
-# def run_retrieve_tracking_urls():
-#     # GATHER VARIABLES
-#     print("Let's retrieve your tracking urls")
-#     print("getting your orgs ...")
-#     orgs = [Option(**o) for o in Query.get_orgs()["data"]["me"]["organizations"]]
-#     print(orgs)
-#     pub_id = config.org_id if config.org_id else selector("Which org would you like to use?", orgs)
-#     campaign_id = config.campaign_id if config.campaign_id else input("\n\nWhat is your campaign id?\n\n")
-#
-#     # RETRIEVE TRACKING URLS
-#     campaign = Campaign(pub_id, campaign_id)
-#     tracking_urls_input = create_tracking_urls_input(campaign)
-#     Query.get_tracking_urls(tracking_urls_input)
-#
-#
+def run_retrieve_tracking_urls():
+    campaign_id = str(ask("What campaign are you retrieving tracking urls for?"))
 
-#
-#
+    orgs = [Option(**o) for o in Query.get_orgs()["data"]["me"]["organizations"]]
+    question = "Which org would you like to use?"
+    pub_id = PUBLISHER_ID if PUBLISHER_ID else selector(question, orgs)
+
+    # RETRIEVE TRACKING URLS
+    tracking_urls_input = create_tracking_urls_input(pub_id, campaign_id)
+    Query.get_tracking_urls(tracking_urls_input)

@@ -6,7 +6,7 @@ load_dotenv()
 
 DATE_FORMAT = "YYYY-MM-DD"
 
-URL = "https://api.pdst.fm/graph/analytics"
+URL = os.getenv("PODSIGHTS_URL", None)
 
 PUBLISHER_ID = os.getenv("PODSIGHTS_PUBLISHER_ID", None)
 
