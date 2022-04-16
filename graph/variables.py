@@ -1,25 +1,30 @@
 from dataclasses import dataclass
-from command_questions import confirm_variables
 
-
-# Give endpoint to get publishers
-# Create config.py to import variables -- Ravin for example will "hardcode" known variables
-# 1. get orgs - return id 
-# ***HOW TO, not actually use***
 
 @dataclass
-class Campaign():
-    pub_id: str=None
-    name: str=None
-    kind: str=None 
-    brand_id: str=None 
-    cost: int=None 
-    goal: int=None 
-    start_date: str=None 
-    end_date: str=None 
-    id: str=None 
-    duration: int=None
-    line_item_name: str=None
+class Campaign:
+    pub_id: str
+    name: str
+    kind: str
+    brand_id: str
+    cost: int
+    goal: int
+    start_date: str
+    end_date: str
+    id: str = None
+
+
+@dataclass
+class DynamicLineItem:
+    campaign_id: str
+    name: str
+    goal: int
+    cost: int
+    duration: int
+    start_date: str
+    end_date: str
+    id: str = None
+
 
 def create_campaign_input(campaign: Campaign):
     """When creating input the keys and strings need quotes."""
@@ -36,9 +41,27 @@ def create_campaign_input(campaign: Campaign):
         }}
     }}
     """
-    print(input)
-    confirm_variables("\nIs the above data correct?")
+    confirm_variables(input)
     return input
+
+
+def create_dynamic_input(line_item: DynamicLineItem):
+    """Input for creating dynamic line items"""
+    input = f""" {{
+        "input" : {{
+            "campaignId" : "{line_item.campaign_id}",
+            "name" : "{line_item.name}",
+            "cost" : {line_item.cost},
+            "goal" : {line_item.goal},
+            "expectedStartAt" : "{line_item.start_date}",
+            "expectedEndAt" : "{line_item.end_date}",
+            "duration" : {line_item.duration}
+        }}
+    }}
+    """
+    confirm_variables(input)
+    return input
+
 
 def create_tracking_urls_input(campaign: Campaign):
     """When creating input the keys and strings need quotes."""
@@ -47,41 +70,20 @@ def create_tracking_urls_input(campaign: Campaign):
         "campaignId" : "{campaign.id}"
     }}
     """
-    print(input)
-    confirm_variables("\nIs the above data correct?")
-    return input
-
-def create_dynamic_input(campaign: Campaign):
-    """Input for creating dynamic line items"""
-    input = f""" {{
-        "input" : {{
-            "campaignId" : "{campaign.id}",
-            "name" : "{campaign.line_item_name}",
-            "cost" : {campaign.cost},
-            "goal" : {campaign.goal},
-            "expectedStartAt" : "{campaign.start_date}",
-            "expectedEndAt" : "{campaign.end_date}",
-            "duration" : {campaign.duration}
-        }}
-    }}
-    """
-    print(input)
-    confirm_variables("\nIs the above data correct?")
+    confirm_variables(input)
     return input
 
 
-def create_streaming_input(campaign: Campaign):
-    """Input for creating streaming line items"""
-    input = f""" {{
-        "input" : {{
-            "campaignId" : "{campaign.id}",
-            "name" : "{campaign.line_item_name}",
-            "cost" : {campaign.cost},
-            "goal" : {campaign.goal},
-            "duration" : {campaign.duration}
-        }}
-    }}
-    """
-    print(input)
-    confirm_variables("\nIs the above data correct?")
-    return input
+def confirm_variables(data):
+    print(f"\n{data}")
+    selection = str(input(f"\nIs the above data correct? y/n "))
+    if selection not in ("y", "n"):
+        print("\n\nPlease enter a valid option!")
+        return confirm_variables(data)
+
+    if selection == "y":
+        return
+
+    if selection == "n":
+        print("\n\nIncorrect data...Exiting\n\n")
+        exit()

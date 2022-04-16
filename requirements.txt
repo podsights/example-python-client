@@ -1,2 +1,4 @@
 requests==2.27.1
 arrow==1.2.2
+python-dotenv==0.20.0
+black==22.3.0

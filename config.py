@@ -1,26 +1,16 @@
-from command_questions import Option
+import os
+from dotenv import load_dotenv
 
-# variables for inputs
 
-# campaigns
-org_id = ""
-company_id = ""
-name = ""
-kind = ""
-cost = ""
-goal = ""
-start_date = ""
-end_date = ""
-campaign_id = ""
-duration = ""
-line_item_name = ""
+load_dotenv()
 
-# common
-url = "http://api.pdst.fm/graph/analytics"
-kind_options = [Option(id="attribution", name="attribution"), Option(id="marketing", name="marketing"), Option(id="reporting", name="reporting")]
+DATE_FORMAT = "YYYY-MM-DD"
 
-headers = {
-  'Authorization': '',
-  'Content-Type': 'application/json',
-  'Cookie': ''
+URL = "https://api.pdst.fm/graph/analytics"
+
+PUBLISHER_ID = os.getenv("PODSIGHTS_PUBLISHER_ID", None)
+
+HEADERS = {
+    "ID": os.getenv("PODSIGHTS_API_ID"),
+    "SECRET": os.getenv("PODSIGHTS_API_KEY"),
 }

@@ -1,76 +1,11 @@
 from dataclasses import dataclass
-from xmlrpc.client import boolean
-import config
+from config import PUBLISHER_ID, DATE_FORMAT
 import arrow
-from graph.queries import *
-from graph.variables import *
-from graph.mutations import *
 
-def run_create_campaigns():
-    # GATHER VARIABLES
-    print("You're running the create a campaign helper")
-    print("getting your orgs ...")
-    orgs = [Option(**o) for o in Query.get_orgs()["data"]["me"]["organizations"]]
-    print(orgs)
-    pub_id = config.org_id if config.org_id else selector("Which org would you like to use?", orgs)
-    print(pub_id)
-    search_brand = str(input("\n\nEnter the brand that is advertising in this campaign.\n\n"))
-    brands = [Option(**b) for b in Query.get_brands(search_brand)["data"]["me"]["companySearch"]]
-    print(brands)
-    brand_id = config.company_id if config.company_id else selector("Which brand would you like to use?", brands)
-    print(brand_id)
-    campaign_name = config.name if config.name else input("\n\nWhat is the name of your campaign?\n\n")
-    kind = config.kind if config.kind else selector("\nWhat type of campaign are you creating?", config.kind_options)
-    cost = config.cost if config.cost else int(input("\n\nWhat is the estimated cost of the campaign?\n\n"))
-    goal = config.goal if config.goal else int(input("\n\nWhat is the estimated goal of the campaign?\n\n"))
-    start_date = config.start_date if config.start_date else arrow.get(input("\n\nWhen is the start of your campaign (MM/DD/YYYY)?\n\n"),'MM/DD/YYYY')
-    print(start_date)
-    end_date = config.end_date if config.end_date else arrow.get(input("\n\nWhen is the end of your campaign (MM/DD/YYYY)?\n\n"),'MM/DD/YYYY')
-    print(end_date)
+from graph.mutations import Mutation
+from graph.queries import Query
 
-    # CREATE CAMPAIGN
-    campaign = Campaign(pub_id, campaign_name, kind, brand_id, cost, goal, start_date, end_date)
-    campaign_input = create_campaign_input(campaign)
-    Mutation.create_campaign(campaign_input)
-
-def run_retrieve_tracking_urls():
-    # GATHER VARIABLES
-    print("Let's retrieve your tracking urls")
-    print("getting your orgs ...")
-    orgs = [Option(**o) for o in Query.get_orgs()["data"]["me"]["organizations"]]
-    print(orgs)
-    pub_id = config.org_id if config.org_id else selector("Which org would you like to use?", orgs)
-    campaign_id = config.campaign_id if config.campaign_id else input("\n\nWhat is your campaign id?\n\n")
-
-    # RETRIEVE TRACKING URLS
-    campaign = Campaign(pub_id, campaign_id)
-    tracking_urls_input = create_tracking_urls_input(campaign)
-    Query.get_tracking_urls(tracking_urls_input)
-
-def run_create_line_items(dynamics:boolean):
-    # GATHER VARIABLES
-    print("Running create line items helper - be sure you have your campaign id")
-    print("getting your orgs ...")
-    campaign_id = config.campaign_id if config.campaign_id else input("\n\nWhat is your campaign id?\n\n")
-    cost = config.cost if config.cost else int(input("\n\nWhat is the estimated cost of the campaign?\n\n"))
-    goal = config.goal if config.goal else int(input("\n\nWhat is the estimated goal of the campaign?\n\n"))
-    duration = config.duration if config.duration else int(input("\n\nWhat is the estimated number of days of the campaign?\n\n"))
-    line_item_name = config.line_item_name if config.line_item_name else input("\n\nWhat is the name of your line item?\n\n")
-    if dynamics:
-        start_date = config.start_date if config.start_date else arrow.get(input("\n\nWhen is the start of your campaign (MM/DD/YYYY)?\n\n"),'MM/DD/YYYY')
-        print(start_date)
-        end_date = config.end_date if config.end_date else arrow.get(input("\n\nWhen is the end of your campaign (MM/DD/YYYY)?\n\n"),'MM/DD/YYYY')
-        print(end_date)
-
-        # CREATE DYNAMICS LINE ITEMS
-        campaign = Campaign(campaign_id, cost, goal, duration, line_item_name, start_date, end_date)
-        line_item_input = create_dynamic_input(campaign)
-        Mutation.create_dynamic_line_item(line_item_input)
-    else:
-        # CREATE STREAMING LINE ITEMS
-        campaign = Campaign(campaign_id, cost, goal, duration, line_item_name)
-        line_item_input = create_streaming_input(campaign)
-        Mutation.create_streaming_line_item(line_item_input)
+from graph.variables import Campaign, DynamicLineItem, create_campaign_input, create_dynamic_input
 
 
 @dataclass
@@ -79,8 +14,25 @@ class Option:
     name: str
 
 
+START_OPTIONS = [
+    Option("campaign", "Create a campaign"),
+    Option("dynamic", "Create a dynamic"),
+    Option("urls", "Retrieve tracking urls"),
+]
+
+CAMPAIGN_KIND_OPTIONS = [
+    Option("attribution", "Attribution"),
+    Option("marketing", "Marketing"),
+    Option("reporting", "Reporting"),
+]
+
+
+def ask(question):
+    return input(f"\n\n{question} ")
+
+
 def selector(question, options):
-    selections = '\n'.join([f"{i}: {option.name}" for i, option in enumerate(options)])
+    selections = "\n".join([f"{i}: {option.name}" for i, option in enumerate(options)])
     try:
         selection = int(input(f"{question}\n\n{selections}\n\n"))
     except ValueError:
@@ -90,24 +42,80 @@ def selector(question, options):
     if 0 <= selection < len(options):
         option = options[selection]
         return option.id
+
     print("Please select a valid option number!")
     return selector(question, options)
 
 
-def confirm_variables(question):
-    try:
-        selection = int(input(f"{question}\n\n0:YES\n1:NO\n\n"))
-    except ValueError:
-        print("\n\nPlease enter a valid option!")
-        return selector(question)
+def start():
+    q = "What would you like to do?"
+    return selector(q, START_OPTIONS)
 
-    if selection == 1:
-        print("\n\nThe variables were not valid...\n\n")
-        print("Exiting\n\n")
-        exit()
-    elif selection == 0:
-        print("\n\nContinuing with creating a campaign...\n\n")
-        return
-    else:
-        print("Please select a valid option number!")
-        return selector(question)
+
+def run_create_campaign():
+    # GATHER VARIABLES
+    print("Executing Create Campaign Helper.")
+    print("We will retrieve your organizations and then ask you some questions to gather data.")
+
+    orgs = [Option(**o) for o in Query.get_orgs()["data"]["me"]["organizations"]]
+    question = "Which org would you like to use?"
+    pub_id = PUBLISHER_ID if PUBLISHER_ID else selector(question, orgs)
+
+    search_brand = str(ask("Enter the brand that is advertising in this campaign."))
+    brands = [Option(**b) for b in Query.get_brands(search_brand)["data"]["me"]["companySearch"]]
+    brand_id = selector("Which brand would you like to use?", brands)
+
+    campaign_name = str(ask("Name of your campaign?"))
+
+    kind = selector("Type of Campaign?", CAMPAIGN_KIND_OPTIONS)
+    cost = int(ask("Cost of the campaign?"))
+    goal = int(ask("Impression Goal of campaign?"))
+
+    start_date = str(arrow.get(str(ask(f"Start of your campaign {DATE_FORMAT}?")), DATE_FORMAT))
+    end_date = str(arrow.get(str(ask(f"End of your campaign {DATE_FORMAT}?")), DATE_FORMAT))
+
+    # CREATE CAMPAIGN
+    campaign = Campaign(pub_id, campaign_name, kind, brand_id, cost, goal, start_date, end_date)
+    campaign_input = create_campaign_input(campaign)
+    Mutation.create_campaign(campaign_input)
+
+
+def run_create_line_item(kind: str = "dynamic"):
+    print("Executing Create Line Item Helper. We'll ask you a few questions to gather data.")
+
+    campaign_id = str(ask("What is your campaign id?"))
+    name = str(ask("Name of line item?"))
+    cost = int(ask("Cost of line item?"))
+    goal = int(ask("Impression goal of line item?"))
+    duration = int(ask("Duration of ad in seconds?"))
+
+    if kind == "dynamic":
+        start_date = str(arrow.get(str(ask(f"Start of line item {DATE_FORMAT}?")), DATE_FORMAT))
+        end_date = str(arrow.get(str(ask(f"Start of line item {DATE_FORMAT}?")), DATE_FORMAT))
+
+        # CREATE DYNAMICS LINE ITEMS
+        dynamic_line_item = DynamicLineItem(
+            campaign_id, name, goal, cost, duration, start_date, end_date
+        )
+        dynamic_line_item_input = create_dynamic_input(dynamic_line_item)
+        Mutation.create_dynamic_line_item(dynamic_line_item_input)
+
+
+# def run_retrieve_tracking_urls():
+#     # GATHER VARIABLES
+#     print("Let's retrieve your tracking urls")
+#     print("getting your orgs ...")
+#     orgs = [Option(**o) for o in Query.get_orgs()["data"]["me"]["organizations"]]
+#     print(orgs)
+#     pub_id = config.org_id if config.org_id else selector("Which org would you like to use?", orgs)
+#     campaign_id = config.campaign_id if config.campaign_id else input("\n\nWhat is your campaign id?\n\n")
+#
+#     # RETRIEVE TRACKING URLS
+#     campaign = Campaign(pub_id, campaign_id)
+#     tracking_urls_input = create_tracking_urls_input(campaign)
+#     Query.get_tracking_urls(tracking_urls_input)
+#
+#
+
+#
+#
