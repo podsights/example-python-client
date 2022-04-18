@@ -5,7 +5,7 @@ import arrow
 from graph.mutations import Mutation
 from graph.queries import Query
 
-from graph.variables import Campaign, DynamicLineItem, create_campaign_input, create_dynamic_input, \
+from graph.variables import Campaign, DynamicLineItem, StreamingLineItem, create_campaign_input, create_dynamic_input, create_streaming_input, \
     create_tracking_urls_input
 
 
@@ -18,6 +18,7 @@ class Option:
 START_OPTIONS = [
     Option("campaign", "Create a campaign"),
     Option("dynamic", "Create a dynamic"),
+    Option("streaming", "Create a streaming"),
     Option("urls", "Retrieve tracking urls"),
 ]
 
@@ -100,6 +101,13 @@ def run_create_line_item(kind: str = "dynamic"):
         )
         dynamic_line_item_input = create_dynamic_input(dynamic_line_item)
         Mutation.create_dynamic_line_item(dynamic_line_item_input)
+    elif kind == "streaming":
+        # CREATE DYNAMICS LINE ITEMS
+        streaming_line_item = StreamingLineItem(
+            campaign_id, name, goal, cost, duration
+        )
+        streaming_line_item_input = create_streaming_input(streaming_line_item)
+        Mutation.create_streaming_line_item(streaming_line_item_input)
 
 
 def run_retrieve_tracking_urls():

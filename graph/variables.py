@@ -25,6 +25,15 @@ class DynamicLineItem:
     end_date: str
     id: str = None
 
+@dataclass
+class StreamingLineItem:
+    campaign_id: str
+    name: str
+    goal: int
+    cost: int
+    duration: int
+    id: str = None
+
 
 def create_campaign_input(campaign: Campaign):
     """When creating input the keys and strings need quotes."""
@@ -55,6 +64,21 @@ def create_dynamic_input(line_item: DynamicLineItem):
             "goal" : {line_item.goal},
             "expectedStartAt" : "{line_item.start_date}",
             "expectedEndAt" : "{line_item.end_date}",
+            "duration" : {line_item.duration}
+        }}
+    }}
+    """
+    confirm_variables(input)
+    return input
+
+def create_streaming_input(line_item: StreamingLineItem):
+    """Input for creating streaming line items"""
+    input = f""" {{
+        "input" : {{
+            "campaignId" : "{line_item.campaign_id}",
+            "name" : "{line_item.name}",
+            "cost" : {line_item.cost},
+            "goal" : {line_item.goal},
             "duration" : {line_item.duration}
         }}
     }}

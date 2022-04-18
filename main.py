@@ -7,6 +7,8 @@ def main():
         run_create_campaign()
     elif action == "dynamic":
         run_create_line_item()
+    elif action == "streaming":
+        run_create_line_item("streaming")
     elif action == "urls":
         run_retrieve_tracking_urls()
 
