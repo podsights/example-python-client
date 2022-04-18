@@ -25,6 +25,7 @@ class DynamicLineItem:
     end_date: str
     id: str = None
 
+
 @dataclass
 class StreamingLineItem:
     campaign_id: str
@@ -71,6 +72,7 @@ def create_dynamic_input(line_item: DynamicLineItem):
     confirm_variables(input)
     return input
 
+
 def create_streaming_input(line_item: StreamingLineItem):
     """Input for creating streaming line items"""
     input = f""" {{
@@ -96,6 +98,7 @@ def create_tracking_urls_input(pub_id: str, campaign_id: str):
     """
     confirm_variables(input)
     return input
+
 
 def create_delete_campaign_input(campaign_id: str):
     """When creating input the keys and strings need quotes."""
