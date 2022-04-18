@@ -5,7 +5,7 @@ import arrow
 from graph.mutations import Mutation
 from graph.queries import Query
 
-from graph.variables import Campaign, DynamicLineItem, StreamingLineItem, create_campaign_input, create_dynamic_input, create_streaming_input, \
+from graph.variables import Campaign, DynamicLineItem, StreamingLineItem, create_campaign_input, create_delete_campaign_input, create_dynamic_input, create_streaming_input, \
     create_tracking_urls_input
 
 
@@ -20,6 +20,7 @@ START_OPTIONS = [
     Option("dynamic", "Create a dynamic"),
     Option("streaming", "Create a streaming"),
     Option("urls", "Retrieve tracking urls"),
+    Option("delete", "Delete a campaign"),
 ]
 
 CAMPAIGN_KIND_OPTIONS = [
@@ -120,3 +121,10 @@ def run_retrieve_tracking_urls():
     # RETRIEVE TRACKING URLS
     tracking_urls_input = create_tracking_urls_input(pub_id, campaign_id)
     Query.get_tracking_urls(tracking_urls_input)
+
+def run_delete_campaign():
+    campaign_id = str(ask("What is the id of the campaign you want to delete?"))
+
+    # RETRIEVE TRACKING URLS
+    delete_campaign_input = create_delete_campaign_input(campaign_id)
+    Mutation.delete_campaign(delete_campaign_input)

@@ -81,6 +81,20 @@ class Mutation:
         return Mutation.mutation(data_request, variables)
 
     @staticmethod
+    def delete_campaign(variables):
+        data_request = """
+           deleteCampaign($input: DeleteCampaignInput!) {
+                authed {
+                    success
+                }
+                deleteCampaign(input:$input){
+                    success
+                }
+            }
+        """
+        return Mutation.mutation(data_request, variables)
+
+    @staticmethod
     def mutation(data_request, variables):
         query = f"""
             mutation {data_request}

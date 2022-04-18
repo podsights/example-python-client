@@ -97,6 +97,17 @@ def create_tracking_urls_input(pub_id: str, campaign_id: str):
     confirm_variables(input)
     return input
 
+def create_delete_campaign_input(campaign_id: str):
+    """When creating input the keys and strings need quotes."""
+    input = f""" {{
+        "input" : {{
+            "id" : "{campaign_id}"
+        }}
+    }}
+    """
+    confirm_variables(input)
+    return input
+
 
 def confirm_variables(data: str):
     print(f"\n{data}")
