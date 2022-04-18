@@ -11,6 +11,7 @@ class Campaign:
     goal: int
     start_date: str
     end_date: str
+    payer_id: str
     id: str = None
 
 
@@ -47,7 +48,8 @@ def create_campaign_input(campaign: Campaign):
             "cost" : {campaign.cost},
             "goal" : {campaign.goal},
             "expectedStartAt" : "{campaign.start_date}",
-            "expectedEndAt" : "{campaign.end_date}"
+            "expectedEndAt" : "{campaign.end_date}",
+            "payerId" : "{campaign.payer_id}"
         }}
     }}
     """

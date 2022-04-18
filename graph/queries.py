@@ -31,6 +31,20 @@ class Query:
         return Query.query(data_request)
 
     @staticmethod
+    def get_payers(organization_id, company_id):
+        data_request = f"""
+            me {{
+                organization(id: "{organization_id}") {{
+                    payerOrganizations(companyId: "{company_id}"){{
+                        id
+                        name
+                    }}
+                }}
+            }}
+        """
+        return Query.query(data_request)
+
+    @staticmethod
     def get_tracking_urls(variables):
         data_request = """
             query CampaignTrackingUrlsQuery($organizationId: ID!, $campaignId: ID!) {

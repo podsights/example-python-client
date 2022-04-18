@@ -5,8 +5,16 @@ import arrow
 from graph.mutations import Mutation
 from graph.queries import Query
 
-from graph.variables import Campaign, DynamicLineItem, StreamingLineItem, create_campaign_input, create_delete_campaign_input, create_dynamic_input, create_streaming_input, \
-    create_tracking_urls_input
+from graph.variables import (
+    Campaign,
+    DynamicLineItem,
+    StreamingLineItem,
+    create_campaign_input,
+    create_delete_campaign_input,
+    create_dynamic_input,
+    create_streaming_input,
+    create_tracking_urls_input,
+)
 
 
 @dataclass
@@ -68,6 +76,14 @@ def run_create_campaign():
     brands = [Option(**b) for b in Query.get_brands(search_brand)["data"]["me"]["companySearch"]]
     brand_id = selector("Which brand would you like to use?", brands)
 
+    payers = [
+        Option(**p)
+        for p in Query.get_payers(pub_id, brand_id)["data"]["me"]["organization"][
+            "payerOrganizations"
+        ]
+    ]
+    payer_id = selector("Who is paying for this campaign?", payers)
+
     campaign_name = str(ask("Name of your campaign?"))
 
     kind = selector("Type of Campaign?", CAMPAIGN_KIND_OPTIONS)
@@ -78,7 +94,17 @@ def run_create_campaign():
     end_date = str(arrow.get(str(ask(f"End of your campaign {DATE_FORMAT}?")), DATE_FORMAT))
 
     # CREATE CAMPAIGN
-    campaign = Campaign(pub_id, campaign_name, kind, brand_id, cost, goal, start_date, end_date)
+    campaign = Campaign(
+        pub_id,
+        campaign_name,
+        kind,
+        brand_id,
+        cost,
+        goal,
+        start_date,
+        end_date,
+        payer_id,
+    )
     campaign_input = create_campaign_input(campaign)
     Mutation.create_campaign(campaign_input)
 
@@ -104,9 +130,7 @@ def run_create_line_item(kind: str = "dynamic"):
         Mutation.create_dynamic_line_item(dynamic_line_item_input)
     elif kind == "streaming":
         # CREATE DYNAMICS LINE ITEMS
-        streaming_line_item = StreamingLineItem(
-            campaign_id, name, goal, cost, duration
-        )
+        streaming_line_item = StreamingLineItem(campaign_id, name, goal, cost, duration)
         streaming_line_item_input = create_streaming_input(streaming_line_item)
         Mutation.create_streaming_line_item(streaming_line_item_input)
 
@@ -121,6 +145,7 @@ def run_retrieve_tracking_urls():
     # RETRIEVE TRACKING URLS
     tracking_urls_input = create_tracking_urls_input(pub_id, campaign_id)
     Query.get_tracking_urls(tracking_urls_input)
+
 
 def run_delete_campaign():
     campaign_id = str(ask("What is the id of the campaign you want to delete?"))
